@@ -32,10 +32,19 @@ exports.create = function(req, res){
 					all = JSON.parse(data);
 			}
 			//console.log('a: '+ (all));
-			item['id'] = all[all.length - 1].id + 1;
+			if(all.length > 0)
+				item['id'] = all[all.length - 1].id + 1;
+			else
+				item['id'] = 0;
+			if(item.position === 0){
+				all.forEach(function(element, index, array){
+					if(element.position >= item.position){
+						element.position += 1;
+					}
+				});
+			}
 			all.push(item);
-			//xonsole.log('a: '+ (all));
-			//sortArray(all);
+
 			fs.writeFile(itemsFilePathname, JSON.stringify(all), function(err){
 				if(err){
 					throw err;
@@ -110,3 +119,34 @@ exports.update = function(req, res){
 		});
 	});
 };
+
+exports.move = function(req, res){
+	var all = [];
+	fs.readFile(itemsFilePathname, 'utf8', function(err, data){
+		if(!err){
+			all = JSON.parse(data);
+		}
+		var new_position = parseInt(req.params.new_position, 10);
+		var target_id = parseInt(req.params.id, 10);
+		var prev_position = -1;
+		for(var i = 0;i < all.length; i++){
+			if(all[i].id === target_id)
+				prev_position = all[i].position;
+		}
+		all.forEach(function(element, index, array){
+			if(element.id === target_id && element.position !== new_position){
+				element.position = new_position;
+			}else if(element.position >= new_position){
+				element.position += 1;
+			}
+			if(element.position > prev_position && element.position < new_position){
+				element.position -= 1;
+			}
+		});
+		fs.writeFile(itemsFilePathname, JSON.stringify(all), function(err){
+			if (err) { throw err; }
+			var result = 1;
+			res.send((result === 1) ? { msg: '' } : { msg:'error: ' + err });
+		});
+	});
+}

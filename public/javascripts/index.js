@@ -19,29 +19,29 @@ var tmpl = '<li><input type="text"><span id = ""></span></li>',
 			li.find('span').text(input.val());
 			li.removeClass('is-editing');
 			//refreshSave();
-			createData(input.val(), mainUl.find('li').length , 1);
+			console.log("pos: "+ mainUl.find('li').length);
+			createData(input.val(), 0 , 1);
 		}
 	});
 	$('.main,.delete,.done').sortable({
 		connectWith: ".main,.done,.delete",
 		tolerance: "pointer",
 		start: function(event, ui){
-			//console.log("start");
 			$('#placeholder').addClass('is-dragging');
 		},
 		stop: function(event, ui){
-			//console.log("stop");
 			$('#placeholder').removeClass('is-dragging');
-			//refreshSave();
-			load();
+			//console.log('fjkfjkf: '+ $(ui.item.index()));
+		},
+		change: function(event, ui){
+			console.log('new : '+ ui.placeholder.index());
+			refreshPosition($(ui.item).find('span').attr('id'), ui.placeholder.index());
 		},
 		receive: function(event, ui){
 			//console.log("receive");
 			var isDone = $(this).hasClass('done');
 			//console.log(isDone);
 			if(isDone === true){
-				//$(ui.item).appendTo(mainUl).addClass('is-done');
-				//console.log('re: '+$(ui.item).find('span').attr('id'));
 				refreshData($(ui.item).find('span').attr('id'));
 			}else{
 				deleteData($(ui.item).find('span').attr('id'));
@@ -91,20 +91,26 @@ var tmpl = '<li><input type="text"><span id = ""></span></li>',
 		deleteUl.empty();
 		$.getJSON('/items', function(data){
 			//console.log('dsadasd'+data);
-			
+			if(data === null) return;
 			arr = JSON.parse(JSON.stringify(data));
 		
 			//console.log('arr: '+ arr);
 			// var arr = JSON.parse(localStorage.cctodoItems);
+			arr.sort(function(a, b){
+				return a.position - b.position;
+			});
 			if(arr !== null){
 				for(var i = 0;i < arr.length; i++){
-					//console.log('val: '+ $(tmpl).find('span').attr('id'));
-					//$(tmpl).find('span').attr('id', arr[i].id.toString());
+					if(arr[i]['status'] !== true){
+						$(tmpl).appendTo(mainUl).find('span').attr('id', arr[i].id.toString()).text(arr[i]['text']);
+					}
+					// else{
+					// 	$(tmpl).appendTo(mainUl).find('span').attr('id', arr[i].id.toString()).text(arr[i]['text']);
+					// }
+				}
+				for(var i = 0;i < arr.length; i++){
 					if(arr[i]['status'] === true){
 						$(tmpl).appendTo(mainUl).addClass('is-done').find('span').attr('id', arr[i].id.toString()).text(arr[i]['text']);
-					}
-					else{
-						$(tmpl).appendTo(mainUl).find('span').attr('id', arr[i].id.toString()).text(arr[i]['text']);
 					}
 				}
 			}
@@ -164,6 +170,20 @@ var tmpl = '<li><input type="text"><span id = ""></span></li>',
 			}
 		});
 		//load();
+	}
+
+	function refreshPosition(id, new_position){
+		$.ajax({
+			type: 'PUT',
+			url: '/items/' + id + '/reposition/' + new_position
+		}).done(function(response){
+			if (response.msg === '') {
+	      		
+	      	}
+	      	else {
+	        	alert('Error: ' + response.msg);
+	      	}
+		});
 	}
 
 }());

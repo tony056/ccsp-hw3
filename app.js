@@ -32,7 +32,7 @@ app.get('/', routes.index);
 app.get('/items', item.list);
 app.post('/items', item.create);
 app.put('/items/:id', item.update);
-//app.put('/items/:id/reposition/:new_position', item.move);
+app.put('/items/:id/reposition/:new_position', item.move);
 app.delete('/items/:id', item.deleteItem);
 
 http.createServer(app).listen(app.get('port'), function(){
