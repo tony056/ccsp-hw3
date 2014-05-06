@@ -129,18 +129,24 @@ exports.move = function(req, res){
 		var new_position = parseInt(req.params.new_position, 10);
 		var target_id = parseInt(req.params.id, 10);
 		var prev_position = -1;
+		var target_status = false;
 		for(var i = 0;i < all.length; i++){
-			if(all[i].id === target_id)
+			if(all[i].id === target_id){
 				prev_position = all[i].position;
+				target_status = all[i].status;
+			}
 		}
 		all.forEach(function(element, index, array){
 			if(element.id === target_id && element.position !== new_position){
 				element.position = new_position;
-			}else if(element.position >= new_position){
-				element.position += 1;
+			}else if(element.position >= new_position && element.status === target_status){
+				if(element.position === 0 || element.position > new_position)
+					element.position += 1;
 			}
-			if(element.position > prev_position && element.position < new_position){
-				element.position -= 1;
+			if(element.id !== target_id && element.status === target_status){
+				if(element.position > prev_position && element.position <= new_position){
+					element.position -= 1;
+				}
 			}
 		});
 		fs.writeFile(itemsFilePathname, JSON.stringify(all), function(err){

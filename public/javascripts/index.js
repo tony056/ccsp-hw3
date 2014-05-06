@@ -32,10 +32,12 @@ var tmpl = '<li><input type="text"><span id = ""></span></li>',
 		stop: function(event, ui){
 			$('#placeholder').removeClass('is-dragging');
 			//console.log('fjkfjkf: '+ $(ui.item.index()));
+			console.log('place: '+ ui.item.index());
+			refreshPosition($(ui.item).find('span').attr('id'), ui.item.index());
 		},
 		change: function(event, ui){
 			console.log('new : '+ ui.placeholder.index());
-			refreshPosition($(ui.item).find('span').attr('id'), ui.placeholder.index());
+			//refreshPosition($(ui.item).find('span').attr('id'), ui.placeholder.index());
 		},
 		receive: function(event, ui){
 			//console.log("receive");
